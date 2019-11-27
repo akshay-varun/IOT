@@ -1,0 +1,63 @@
+#include<ESP8266WiFi.h>
+#include "Adafruit_MQTT_Client.h"
+
+#define ldr A0
+#define wifi "Juzt Hotspot"
+#define password "1234ajay"
+#define server "io.adafruit.com"
+
+#define port 1883
+#define username "akshaygr4"
+#define key "f9009d29122647afbfad8e338cb98caf"
+
+WiFiClient esp;
+Adafruit_MQTT_Client mqtt(&esp,server,port,username,key);
+
+Adafruit_MQTT_Publish feed=Adafruit_MQTT_Publish(&mqtt,username "/feeds/ldr");
+
+void setup()
+{
+  Serial.begin(115200);
+  delay(10);
+  Serial.println("Adafruit MQTT demo");
+  Serial.print("Connecting to");
+  Serial.println(wifi);
+  WiFi.begin(wifi,password);
+
+  while(WiFi.status()!=WL_CONNECTED)
+  {
+    delay(2000);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi connected");
+  Serial.print("IP address:");
+  Serial.println(WiFi.localIP());
+  Serial.print("Connecting to MQTT");
+
+  while(mqtt.connect())
+  {
+    Serial.print(".");
+  }
+}
+
+void loop()
+{
+  if(mqtt.connected())
+  {
+    int data = analogRead(ldr);
+    Serial.print("\n Sending LDR val");
+    Serial.print(data);
+    Serial.print(".....");
+
+    if(feed.publish(data))
+    {
+      Serial.println("Success");
+    }
+    else
+    {
+      Serial.println("Fail");
+    }
+   delay(2000); 
+  }
+}
